@@ -1,0 +1,4 @@
+# file: roles/aws.lambda/defaults/main.yml
+---
+#
+# foo: default

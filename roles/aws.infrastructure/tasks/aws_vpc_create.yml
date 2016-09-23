@@ -1,0 +1,34 @@
+# tasks file for aws_vpc
+---
+# Note: None of these examples set aws_access_key, aws_secret_key, or region.
+# It is assumed that their matching environment variables are set.
+
+- name: Create a AWS VPC with a public subnet
+  become: no
+  ec2_vpc:
+    wait: true
+    state: present
+    region: aws_region
+    internet_gateway: True
+    cidr_block: 172.22.0.0/16
+    resource_tags: { "Name":"Ansible Tower Workshop VPC", "ProvisionedBy":"Ansible", "DeleteTag":"ATW" }
+    
+    subnets:
+      - cidr: 172.22.1.0/24
+        az: us-east-1d
+        resource_tags: { "Name":"AnsibleTowerSN", "Subnet" : "Public" }
+    
+    route_tables:
+      - subnets:
+          - 172.22.1.0/24
+        routes:
+          - dest: 0.0.0.0/0
+            gw: igw
+            resource_tags: { "Name":"AnsibleTowerRT", "RT" : "Public" }
+  
+  register: vpc
+
+
+- debug: var=vpc
+
+# - debug: msg="You have a new VPC created in {{ vpc.region }} "

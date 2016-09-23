@@ -1,0 +1,4 @@
+# file: roles/aws.infrastructure/defaults/main.yml
+---
+#
+# foo: default

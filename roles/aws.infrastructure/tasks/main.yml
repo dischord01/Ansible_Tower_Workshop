@@ -1,0 +1,8 @@
+# file: roles/aws.infrastructure/tasks/main.yml
+---
+
+- include: aws_vpc_create.yml
+  tags: vpc_create
+
+- include: aws_vpc_delete.yml
+  tags: vpc_delete

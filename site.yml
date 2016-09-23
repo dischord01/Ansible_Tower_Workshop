@@ -1,0 +1,33 @@
+# file: site.yml
+---
+# - include: example_role.yml
+
+# Create AWS Infrastucture
+#   ansible-playbook site.yml   
+# Static hosts
+#   ansible-playbook -i inventory site.yml
+# Dynamic inventory for AWS
+#   ansible-playbook -i ec2.py site.yml
+#   ansible-playbook -i terraform.py site.yml
+
+
+- name: Provision AWS Infrastucture
+  hosts: localhost
+  roles:
+  - role: aws.infrastructure
+
+
+# - name: Install & Configure nodes default settings and packages
+#   hosts: nodes
+#   become: yes
+#   roles:
+#   - { role: aws.prep.nodes, tags: ["rhel"] }
+
+
+# - name: Install OpenShift with Atomic Installer
+#   remote_user: ec2-user
+#   hosts: masters
+#   tasks: []
+#   roles:
+#   - { role: aws.atomic.install, tags: ["atomic"] }
+  # - { role: aws.s3.storage, tags: ["s3"] }
