@@ -1,0 +1,17 @@
+# - name: Terminate instances
+#   hosts: localhost
+#   connection: local
+#   tasks:
+#     - name: Terminate instances that were previously ansible_tower
+#       ec2:
+#         state: 'absent'
+#         instance_ids: '{{ ec2.instance_ids }}'
+
+
+# # Start stopped instances specified by tag
+# #
+# - local_action:
+#     module: ec2
+#     instance_tags:
+#         Name: ExtraPower
+#     state: running

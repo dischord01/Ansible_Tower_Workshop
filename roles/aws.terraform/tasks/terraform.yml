@@ -1,0 +1,26 @@
+---
+
+- name: Make temporary location to run Terraform
+  file: path=/tmp/terraform  state=directory
+  tags:
+    - terraform
+
+- name: Template Terraform files locally to run
+  template: dest=/tmp/terraform/aws.tf  src=aws.tf.j2
+  tags:
+    - terraform
+
+- name: Template terraform.tfvars
+  template: dest=/tmp/terraform/terraform.tfvars  src=terraform.tfvars.j2
+  tags:
+    - terraform
+
+- name: Copy id_rsa to /tmp/terraform to provision nodes
+  copy: dest=/tmp/terraform/id_rsa mode=400 src=id_rsa
+  tags:
+    - terraform
+
+- name: Run Terraform
+  command: terraform apply chdir=/tmp/terraform  
+  tags:
+    - terraform

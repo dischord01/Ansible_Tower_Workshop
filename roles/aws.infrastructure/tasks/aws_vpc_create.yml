@@ -1,34 +1,85 @@
 # tasks file for aws_vpc
 ---
-# Note: None of these examples set aws_access_key, aws_secret_key, or region.
-# It is assumed that their matching environment variables are set.
-
+#---------------------------------------------------
+#  VPC
+#---------------------------------------------------
 - name: Create a AWS VPC with a public subnet
-  become: no
   ec2_vpc:
-    wait: true
     state: present
-    region: aws_region
-    internet_gateway: True
-    cidr_block: 172.22.0.0/16
-    resource_tags: { "Name":"Ansible Tower Workshop VPC", "ProvisionedBy":"Ansible", "DeleteTag":"ATW" }
-    
-    subnets:
-      - cidr: 172.22.1.0/24
-        az: us-east-1d
-        resource_tags: { "Name":"AnsibleTowerSN", "Subnet" : "Public" }
-    
-    route_tables:
-      - subnets:
-          - 172.22.1.0/24
-        routes:
-          - dest: 0.0.0.0/0
-            gw: igw
-            resource_tags: { "Name":"AnsibleTowerRT", "RT" : "Public" }
-  
+    cidr_block: "{{ cidr_block }}"
+    resource_tags: { "Name": "Ansible Tower Demo" }
+    subnets: "{{ vpc_subnets }}"       
+    route_tables: "{{ route_tables }}"
+    region: "{{ region }}"
+    internet_gateway: true
+    wait: yes
   register: vpc
 
+#---------------------------------------------------
+#  Security Group
+#---------------------------------------------------
+- name: Create Tower security group
+  ec2_group:
+    name: ansible_tower_sg
+    description: Ansible Tower Securiy Group
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    rules: "{{ ansible_tower_sg_rules }}"
+  register: tower_sec_group
 
-- debug: var=vpc
+#---------------------------------------------------
+#  SSH Key
+#---------------------------------------------------
+- name: Create EC2 keypair
+  ec2_key: name="{{ tower_keypair }}" region="{{ region }}"
+  register: ec2_key
 
-# - debug: msg="You have a new VPC created in {{ vpc.region }} "
+- debug: var=ec2_key
+
+- name: Create ssh keypair
+  copy: content="{{ ec2_key.key.private_key }}"
+        dest="{{ ssh_key_path }}/{{ tower_keypair }}"
+        mode=0400
+
+#---------------------------------------------------
+#  EC2 
+#---------------------------------------------------
+- name: Launch Tower Instance
+  ec2:
+    wait: yes
+    exact_count: 1
+    region: "{{ region }}"
+    image: "{{ tower_ami }}"
+    key_name: "{{ tower_keypair }}"
+    group_id: "{{ tower_sec_group.group_id }}"
+    instance_type: "{{ tower_instance_type }}"
+    assign_public_ip: "{{ tower_public_ip }}"
+    volumes:
+      - device_name: /dev/xvda
+        volume_type: gp2
+        volume_size: 8
+        delete_on_termination: true
+    count_tag:
+      Name: "{{ tower_instance_tag }}"
+    instance_tags:
+      Name: "{{ tower_instance_tag }}"
+    vpc_subnet_id: "{{ vpc.subnets[0].id }}"
+  register: tower_instance
+
+- debug: var=tower_instance
+
+- name: Wait for instance to become available
+  wait_for: 
+    host: "{{ tower_instance.tagged_instances.0.public_ip }}"
+    port: 22 
+    search_regex: OpenSSH 
+    timeout: 320 
+    state: started
+
+- name: Add Tower ami to in-memory inventory to pass to next Playbook
+  add_host: 
+    groups: tower 
+    name: "{{ tower_instance.tagged_instances.0.public_ip }}"
+
+- set_fact:
+    tower_public_ip: "{{ tower_instance.tagged_instances.0.public_ip }}"

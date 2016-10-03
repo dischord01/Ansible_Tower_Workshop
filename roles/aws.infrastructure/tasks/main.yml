@@ -6,3 +6,9 @@
 
 - include: aws_vpc_delete.yml
   tags: vpc_delete
+
+- include: ec2_instances_create.yml
+  tags: ec2_create
+
+- include: ec2_instances_delete.yml
+  tags: ec2_delete

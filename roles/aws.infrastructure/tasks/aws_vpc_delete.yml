@@ -4,18 +4,18 @@
 # the delete will fail until those dependencies are removed.
 
 # AWS VPCs
-- ec2_vpc_net_facts:
-    region: "{{ aws_region }}"
-    filters:
-      "tag:DeleteTag": ATW
-  register: aws_vpc_facts 
+# - ec2_vpc_net_facts:
+#     region: "{{ aws_region }}"
+#     filters:
+#       "tag:DeleteTag": ATW
+#   register: aws_vpc_facts 
 
-- set_fact:
-    vpc_delete_id: "{{ aws_vpc_facts.vpcs[0].id }}"
+# - set_fact:
+#     vpc_delete_id: "{{ aws_vpc_facts.vpcs[0].id }}"
 
-- name: Delete VPC
-  ec2_vpc:
-    state: absent
-    vpc_id: vpc_delete_id
-    region: "{{ aws_region }}"
-    resource_tags: { DeleteTag: ATW }
+# - name: Delete VPC
+#   ec2_vpc:
+#     state: absent
+#     vpc_id: vpc_delete_id
+#     region: "{{ aws_region }}"
+#     resource_tags: { DeleteTag: ATW }

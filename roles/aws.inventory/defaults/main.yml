@@ -1,0 +1,4 @@
+# file: roles/aws.inventory/defaults/main.yml
+---
+#
+# foo: default

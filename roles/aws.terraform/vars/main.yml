@@ -1,0 +1,11 @@
+# file: roles/aws.terraform/vars/main.yml
+---
+
+# Domain Name you own
+# domain_name: ""
+# zone_id: ""
+
+
+# AWS API Keys for terraform.tfvars file
+# aws_access_key: ""
+# aws_secret_key: ""
