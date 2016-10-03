@@ -1,5 +1,0 @@
-# file: roles/aws.inventory/tasks/main.yml
----
-
-- name: Add Tower Host to Local Inventory File
-  template: dest="{{ lookup('env','PWD') }}/inventory"  src=inventory.j2
