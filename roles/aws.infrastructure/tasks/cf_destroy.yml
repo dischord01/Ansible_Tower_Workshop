@@ -1,0 +1,7 @@
+---
+
+- name: Destroy Ansible Tower CloudFormation Stack
+  tags: ['cf_destroy']
+  cloudformation:
+    stack_name: "ansible-tower-cloudformation"
+    state: "absent"

@@ -4,7 +4,10 @@
 - name: Provision AWS Infrastucture
   hosts: local_target
   roles:
-  - { role: aws.infrastructure, tags: ["vpc_create"] }
+  # - { role: aws.infrastructure, tags: ["vpc_create"] }
+  - { role: aws.cloudformation, tags: ["cf_create"] }
+
+
 
 #############################################################
 #  USAGE
