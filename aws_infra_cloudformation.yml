@@ -1,0 +1,20 @@
+# file: aws_infra_cloudformation.yml
+---
+
+# https://aws.amazon.com/documentation/cloudformation/
+
+
+- name: Provision AWS Infrastucture using AWS CloudFormation
+  hosts: local_target
+  roles:
+  - { role: aws.infra.cloudformation, tags: ["cf_create"] }
+
+
+
+#############################################################
+#  USAGE
+#############################################################
+
+# ansible-playbook -i inventory aws_infra_cloudformation.yml --tags "cf_create" 
+
+# ansible-playbook -i inventory aws_infra_cloudformation.yml --tags "cf_destroy" 

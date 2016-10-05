@@ -1,0 +1,4 @@
+# file: roles/aws.infra.cloudformation/defaults/main.yml
+---
+#
+# foo: default

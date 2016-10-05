@@ -1,0 +1,15 @@
+# file: roles/aws.infra.ansible/tasks/main.yml
+---
+
+#####################################################
+# Ansible Cloud Modules:
+#####################################################
+- include: aws_infra_create.yml
+  tags: 
+    - vpc_create
+
+- include: aws_infra_destroy.yml
+  tags: 
+    - vpc_destroy
+
+

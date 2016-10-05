@@ -1,10 +1,10 @@
 ---
 
-# Basic Lambda function deletion
-- name: Delete Lambda functions HelloWorld and ByeBye
-  lambda:
-    name: '{{ item }}'
-    state: absent
-  with_items:
-    - HelloWorld
-    - ByeBye
+# # Basic Lambda function deletion
+# - name: Delete Lambda functions HelloWorld and ByeBye
+#   lambda:
+#     name: '{{ item }}'
+#     state: absent
+#   with_items:
+#     - HelloWorld
+#     - ByeBye

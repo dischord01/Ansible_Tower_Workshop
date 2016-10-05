@@ -1,12 +1,12 @@
 # # install_roles.yml
 
-# # from galaxy
+# from galaxy
 # - src: yatesr.timezone
 
-# # from github
+# from github
 # - src: https://github.com/bennojoy/nginx
 
-# # from github installing to a relative path
+# from github installing to a relative path
 # - src: https://github.com/bennojoy/nginx
 #   path: vagrant/roles/
 

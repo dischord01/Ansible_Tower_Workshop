@@ -1,0 +1,4 @@
+# file: roles/aws.infra.ansible/defaults/main.yml
+---
+#
+# foo: default

@@ -1,0 +1,13 @@
+# file: roles/aws.infra.cloudformation/tasks/main.yml
+---
+
+#####################################################
+# CloudFormation:
+#####################################################
+- include: cf_create.yml
+  tags: 
+    - cf_create
+
+- include: cf_destroy.yml
+  tags: 
+    - cf_destroy

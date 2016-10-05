@@ -1,21 +1,61 @@
 ---
 
-# Create Lambda functions
-- name: looped creation
+# IAM Assume Role 
+- name: Create IAM role with custom trust relationship
+  iam:
+    iam_type: role
+    name: OHTLambdaRole
+    state: present
+    trust_policy:
+      Version: '2012-10-17'
+      Statement:
+      - Action: sts:AssumeRole
+        Effect: Allow
+        Principal:
+          Service: lambda.amazonaws.com
+  register: OHT_Assume_Role
+
+- debug: var=OHT_Assume_Role
+
+# IAM Policy
+- name: IAM Policy for Lambda Functions
+  iam_policy:
+    iam_type: role
+    iam_name: "OHTLambdaRole"
+    policy_name: "OfficeHoursTerminator"
+    policy_json:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: MyStatementId
+          Effect: Allow
+          Action:
+          - ec2:DescribeInstances
+          - ec2:StopInstances
+          Resource:
+          - "*"
+    state: present
+  register: OHT_Policy
+
+- debug: var=OHT_Policy
+
+- name: Name for shell module.
+  shell: aws iam get-role --role-name OHTLambdaRole | jq '.Role.Arn'
+  register: OHT_Arn
+
+- debug: var=OHT_Arn.stdout
+
+# Lambda functions
+- name: OfficeHoursTerminator
   lambda:
-    name: '{{ item.name }}'
+    name: 'OfficeHoursTerminator'
     state: present
     zip_file: '{{ item.zip_file }}'
-    runtime: 'python2.7'
-    role_arn: 'arn:aws:iam::987654321012:role/lambda_basic_execution'
-    handler: 'hello_python.my_handler'
-    vpc_subnet_ids:
-    - subnet-123abcde
-    - subnet-edcba321
-    vpc_security_group_ids:
-    - sg-123abcde
-    - sg-edcba321
+    runtime: 'nodejs4.3'
+    handler: 'index.handler'
+    role_arn: "{{ OHT_Arn.stdout | replace('\"', '') }}"
   with_items:
-    - { name: HelloWorld, zip_file: 'hello-code.zip' }
-    - { name: ByeBye, zip_file: 'bye-code.zip' }
+    # - { name: OfficeHoursTerminator, zip_file: "{{ lookup('file', 'OfficeHoursTerminator.zip') }}" }
+    # - { name: OfficeHoursTerminator, zip_file: "{{ lookup('template', 'OfficeHoursTerminator.zip') }}" }
+    - { name: OfficeHoursTerminator, zip_file: "/Users/dischord01/Code/Ansible_Tower/roles/aws.lambda/templates/OfficeHoursTerminator.zip" }
+
 

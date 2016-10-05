@@ -1,0 +1,12 @@
+---
+ 
+- name: Deploy Ansible Tower CloudFormation Template
+  tags: ['cf_create']
+  cloudformation:
+    stack_name: "ansible-tower-cloudformation"
+    state: "present"
+    region: "us-east-1"
+    disable_rollback: true
+    template: "roles/aws.infra.cloudformation/files/Ansible-Tower-el7-QuickStart.json"
+    tags:
+      Stack: "ansible-tower-cloudformation"

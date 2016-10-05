@@ -1,0 +1,19 @@
+# file: aws_infra_ansible.yml
+---
+
+# http://docs.ansible.com/ansible/list_of_cloud_modules.html
+
+- name: Provision AWS Infrastucture using Ansible Cloud Modules
+  hosts: local_target
+  roles:
+  - { role: aws.infrastructure, tags: ["vpc_create"] }
+
+
+
+#############################################################
+#  USAGE
+#############################################################
+
+# ansible-playbook -i inventory aws_infra_ansible.yml --tags "vpc_create" 
+
+# ansible-playbook -i inventory aws_infra_ansible.yml --tags "vpc_destroy" 

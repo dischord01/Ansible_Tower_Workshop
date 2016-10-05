@@ -1,0 +1,7 @@
+# file: playbook_aws_lambda.yml
+---
+
+- name: Configure Ansible Tower
+  hosts: local_target
+  roles:
+    - { role: aws.lambda }
