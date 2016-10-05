@@ -33,7 +33,7 @@ export AWS_SECRET_ACCESS_KEY='****************TFHJw'
 
 ### Ansible Cloud Modules
 
-To create infrastructure & a Ansible Tower instance via Ansible
+To create infrastructure and a Ansible Tower instance via Ansible
 
 ```
 ansible-playbook -i inventory aws_infra_ansible.yml --tags "vpc_create" 
@@ -48,7 +48,7 @@ ansible-playbook -i inventory aws_infra_ansible.yml --tags "vpc_destroy"
 
 ### AWS CloudFormation
 
-To create infrastructure & a Ansible Tower instance via CloudFormation
+To create infrastructure and a Ansible Tower instance via CloudFormation
 
 ```
 ansible-playbook -i inventory aws_infra_cloudformation.yml --tags "cf_create" 
@@ -61,7 +61,7 @@ ansible-playbook -i inventory aws_infra_cloudformation.yml --tags "cf_destroy"
 
 ### Terraform
 
-To create infrastructure & a Ansible Tower instance via Terraform 
+To create infrastructure and a Ansible Tower instance via Terraform 
 
 ```
 brew install terraform
