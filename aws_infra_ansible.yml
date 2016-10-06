@@ -6,7 +6,7 @@
 - name: Provision AWS Infrastucture using Ansible Cloud Modules
   hosts: local_target
   roles:
-  - { role: aws.infrastructure, tags: ["vpc_create"] }
+  - { role: aws.infra.ansible, tags: ["vpc_create"] }
 
 
 
