@@ -1,56 +1,111 @@
 ---
-# Setup tower-cli, users & groups
 
-- name: Ensure pip is installed
-  package: name=python-pip state=present use=yum
-  retries: 10
+#--------------------------------------------------
+# Install tower-cli
+#--------------------------------------------------
+
+- name: Install pip
+  become: yes
+  become_user: root
+  yum: name=python-pip  state=present
 
 
 - name: Install tower-cli
+  become: yes
+  become_user: root
   pip: name=ansible-tower-cli state=present
 
+#--------------------------------------------------
+# Add License
+#--------------------------------------------------
 
-- name: Disable ssl for tower-cli for the demo
-  command: tower-cli config verify_ssl false
+- name: Add Ansible Tower License
+  become: yes
+  become_user: root
+  copy: src=license dest=/etc/tower/license
 
+#--------------------------------------------------
+# Configure Tower Admin Account
+#--------------------------------------------------
 
-- name: Config username for ansible tower-cli
-  command: tower-cli config username admin
+- name: Change Password for Admin
+  become: yes
+  become_user: root
+  copy: src=.tower_cli.cfg dest=/home/centos/.tower_cli.cfg mode=0600 owner=root
 
+- name: Install pexpect for expext module
+  become: yes
+  become_user: root
+  pip: name=pexpect state=present
 
-- name: config password for ansible tower-cli
-  command: tower-cli config password {{ tower_admin_passwd }}
+- name: Use Expect to change via tower-manage
+  become: yes
+  become_user: root
+  expect:
+    command: tower-manage changepassword admin
+    responses:
+      (?i)password: "password!"
 
+#--------------------------------------------------
+# Configure Demo Users
+#--------------------------------------------------
 
-- name: Add user to Ansible Tower
-  command: tower-cli user create --username {{ item.email }} --first-name {{ item.firstname }} --last-name {{ item.lastname }} --email {{ item.email }} --password {{ default_password }}
-  with_items: "{{ users }}"
-  tags:
-    - users
-
-- name: Associate user with Ansible Organization
-  command: tower-cli organization associate --user {{ item.email }} --organization "{{ organization }}"
-  with_items: "{{ users }}"
-  tags:
-    - users
-
-- name: Associate user with Ansible Team
-  command: tower-cli team associate --user {{ item.email }} --team "{{ team }}"
-  with_items: "{{ users }}"
-  tags:
-    - users
+# - name: Disable ssl for tower-cli for the demo
+#   command: tower-cli config verify_ssl false
 
 - name: Create Tower Organization
-  command: tower-cli organization create --name {{org_name}} --description {{org_desc}}
+  become: yes
+  become_user: root
+  command: tower-cli organization create --name {{ item.org_name }} --description {{ item.org_description }}
+  with_items: "{{ organizations }}"
   tags:
     - setup
 
 - name: Create Tower Team
-  command: tower-cli team create --name {{team_name}} --description {{team_desc}}
+  command: tower-cli team create --name {{ item.team_name }} --description {{ item.team_description }} --organization {{ item.team_org_name }}
+  become: yes
+  become_user: root
+  with_items: "{{ teams }}"
   tags:
     - setup
 
-- name: Create Slack Notifiction template
-  command: tower-cli notification_template create --name {{notification_name}} --description {{notification_desc}} --notification-type slack --channels {{slack_channels}} --token {{slack_token}}
+- name: Add user to Ansible Tower
+  become: yes
+  become_user: root
+  shell: >
+    tower-cli user create 
+    --username {{ item.username }} 
+    --first-name {{ item.first_name }} 
+    --last-name {{ item.last_name }} 
+    --email {{ item.email }} 
+    --password {{ item.password }}  
+    --is-superuser "{{ item.superuser | bool }}" 
+    --is-system-auditor "{{ item.auditor | bool }}"
+  with_items: "{{ users }}"
   tags:
-    - setup
+    - users
+
+- name: Associate user with Team
+  become: yes
+  become_user: root
+  command: tower-cli team associate --user {{ item.username }} --team "Lab-Team"
+  with_items: "{{ users }}"
+  tags:
+    - users    
+
+- name: Associate user with Organization
+  become: yes
+  become_user: root
+  command: tower-cli organization associate --user {{ item.username }} --organization "Lab-Organization"
+  with_items: "{{ users }}"
+  tags:
+    - users
+
+#--------------------------------------------------
+# Slack
+#--------------------------------------------------
+
+# - name: Create Slack Notifiction template
+#   command: tower-cli notification_template create --name {{notification_name}} --description {{notification_desc}} --notification-type slack --channels {{slack_channels}} --token {{slack_token}}
+#   tags:
+#     - setup

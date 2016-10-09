@@ -8,6 +8,8 @@
     filters:
       "tag:DeleteTag": ATW
   register: aws_ec2_facts
+  tags:
+    - vpc_destroy
 
 - debug: var=aws_ec2_facts.instances[0].id
 
@@ -16,6 +18,8 @@
     state: 'absent'
     region: "{{ region }}"
     instance_ids: '{{ aws_ec2_facts.instances[0].id }}'
+  tags:
+    - vpc_destroy
 
 #####################################################
 # Get VPC + Subnet + Route Table Facts 
@@ -26,9 +30,13 @@
     filters:
       "tag:DeleteTag": ATW
   register: aws_vpc_facts 
+  tags:
+    - vpc_destroy
 
 - set_fact:
     vpc_delete_id: "{{ aws_vpc_facts.vpcs[0].id }}"
+  tags:
+    - vpc_destroy
 
 # AWS Subnets
 - ec2_vpc_subnet_facts:
@@ -36,14 +44,17 @@
     filters:
       vpc-id: "{{ vpc_delete_id }}"
   register: aws_subnet_facts
-
+  tags:
+    - vpc_destroy
+    
 # AWS Route Tables
 - ec2_vpc_route_table_facts:
     region: "{{ region }}"
     filters:
       vpc-id: "{{ vpc_delete_id }}"
   register: aws_route_tables
-
+  tags:
+    - vpc_destroy
 
 #####################################################
 # DEBUG
@@ -65,14 +76,16 @@
     region: "{{ region }}"
     vpc_id: "{{ vpc_delete_id }}"
     state: absent
-
+  tags:
+    - vpc_destroy
 
 - name: Delete route table
   ec2_vpc_route_table:
     vpc_id: "{{ vpc_delete_id }}"
     region: "{{ region }}"
     state: absent
-      
+  tags:
+    - vpc_destroy      
 
 - name: Delete Subnet 
   ec2_vpc_subnet:
@@ -80,7 +93,8 @@
     cidr: "{{ cidr_block }}"
     region: "{{ region }}"
     state: absent
-
+  tags:
+    - vpc_destroy
 
 - name: Delete VPC
   ec2_vpc:
@@ -88,3 +102,5 @@
     region: "{{ region }}"
     resource_tags: { DeleteTag: "ATW" }
     state: absent
+  tags:
+    - vpc_destroy
