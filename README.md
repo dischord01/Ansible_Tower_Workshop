@@ -97,7 +97,13 @@ ansible-playbook -i inventory/terraform.py aws_ec2_instance.yml
 
 ## Login to Ansible Tower
 
+browse to the public ip of the EC2 instance and enter the `admin` password located in `roles/ansible.tower/vars/main.yml`. By default the `ansible.tower` role installs 15 student accounts and associates them with a default `Lab Team` & `Lab Organization`. 
+
+![Login](https://s3.amazonaws.com/dischord01/img/ansible-tower.png)
+
 ####Install Ansible Roles from [Galaxy](https://galaxy.ansible.com/)
+
+This repo also contains a Ansible Galaxy file to install any remote roles from galaxy. To add additional roles add the role name to the `galaxy.yml` file and install it as shown below. 
 
 ```
 ansible-galaxy install username.rolename

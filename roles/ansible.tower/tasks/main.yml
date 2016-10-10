@@ -44,7 +44,7 @@
   expect:
     command: tower-manage changepassword admin
     responses:
-      (?i)password: "password!"
+      (?i)password: "{{ tower_admin_passwd }}"
 
 #--------------------------------------------------
 # Configure Demo Users
