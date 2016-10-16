@@ -10,13 +10,13 @@
 #----------------------------------------------
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "security_group" {default = "ose-sg"}
-variable "keypair" {default = "id_rsa"}
-variable "master_instance_type" {default = "c3.large"}
-variable "node_instance_type" {default = "c3.large"}
+variable "security_group" {default = "ansible-tower-sg"}
+variable "keypair" {default = "tower"}
+variable "tower_instance_type" {default = "t2.small"} # m4.large
+variable "node_instance_type" {default = "t2.small"}  # c4.large
 variable "aws_region" {default = "us-east-1"}
-variable "ebs_root_block_size" {default = "100"}
-variable "aws_ami" {default = "ami-a86614bf"} # RHEL 7.1=ami-12663b7a, RHEL 7.2=ami-2051294a
+variable "ebs_root_block_size" {default = "50"}
+variable "aws_ami" {default = "ami-a86614bf"} # US-EAST-1 Tower Image
 variable "num_nodes" { default = "1" }
 #----------------------------------------------
 # API Keys
@@ -71,7 +71,7 @@ resource "aws_route_table_association" "public" {
 # Security Group
 #----------------------------------------------
 resource "aws_security_group" "ansible-tower-sg" {
-  name   = "ose-sg"
+  name   = "ansible-tower-sg"
   vpc_id = "${aws_vpc.main.id}"
 
   egress {
@@ -96,7 +96,6 @@ resource "aws_security_group" "ansible-tower-sg" {
   }
 }
 
-
 #----------------------------------------------
 # DNS
 #----------------------------------------------
@@ -119,49 +118,33 @@ resource "aws_route53_record" "nodes" {
   records = ["${element(aws_instance.node.*.public_ip, count.index)}"]
 }
 
-
-
 #----------------------------------------------
-# AMI
+# AMI : Ansible Tower
 #----------------------------------------------
 resource "aws_instance" "ansible-tower" {
     ami               = "${var.aws_ami}"
-    instance_type     = "${var.master_instance_type}"
+    instance_type     = "${var.tower_instance_type}"
     subnet_id         = "${aws_subnet.public.id}"
     key_name          = "${var.keypair}"
-    security_groups   = [ "${aws_security_group.ose-sg.id}" ] 
+    security_groups   = [ "${aws_security_group.ansible-tower-sg.id}" ] 
 	
     root_block_device = {
-		volume_type   = "gp2"
-		volume_size   = "${var.ebs_root_block_size}"
-	}
+      volume_type     = "gp2"
+		volume_size       = "${var.ebs_root_block_size}"
+	  }
     connection {
-        user = "ec2-user"
-        key_file = "id_rsa"
+        user     = "ec2-user"
+        key_file = "tower"
     }
-    provisioner "file" {
-        source = "id_rsa"
-        #key in pwd
-        destination = "~/.ssh/id_rsa"
-    }
-    provisioner "remote-exec" {
-      inline = [
-        "sudo chmod 400 ~/.ssh/id_rsa",
-        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
-        "sudo echo -e 'master.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",
-        "sudo echo -e 'HOSTNAME=master.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
-        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 master.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
-        ]
-    } 
-
     tags {
-        Name    = "master"
+        Name    = "ansible-tower"
         sshUser = "ec2-user"
-        role    = "masters"
+        role    = "ansible-tower"
     }
 }
-
+#----------------------------------------------
+# AMI : Generic Node
+#----------------------------------------------
 resource "aws_instance" "node" {
     count             = "${var.num_nodes}"
     ami               = "${var.aws_ami}"
@@ -170,99 +153,20 @@ resource "aws_instance" "node" {
     key_name          = "${var.keypair}"
     security_groups   = [ "${aws_security_group.ansible-tower-sg.id}" ]
 
-	root_block_device = {
-		volume_type   = "gp2"
-		volume_size   = "${var.ebs_root_block_size}"
-	}
+	  root_block_device = {
+      volume_type     = "gp2"
+      volume_size     = "${var.ebs_root_block_size}"
+	  }
     connection {
-        user = "ec2-user"
-        key_file = "id_rsa"
+        user     = "ec2-user"
+        key_file = "tower"
     }
-    provisioner "file" {
-        source = "id_rsa"
-        #key in pwd
-        destination = "~/.ssh/id_rsa"
-    }
-    provisioner "remote-exec" {
-      inline = [
-        "sudo chmod 400 ~/.ssh/id_rsa",
-        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
-        "sudo echo -e 'node.${count.index}.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",        
-        "sudo echo -e 'HOSTNAME=node.${count.index}.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
-        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo echo -e '${self.public_ip} node.${count.index}.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 node.${count.index}.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
-        ]
-    }
-
     tags {
         Name    = "${concat("node", count.index)}"
         sshUser = "ec2-user"
         role    = "nodes"
     }
 }
-#----------------------------------------------
-# EIP Association
-#----------------------------------------------
-
-# Create EIP
-# resource "aws_eip" "ose-eip" {
-#   instance = "${aws_instance.ose-master.id}"
-#   vpc = true
-# }
-
-# # Associate EIP with Master
-# resource "aws_eip_association" "eip_assoc" {
-#   instance_id = "${aws_instance.ose-master.id}"
-#   allocation_id = "${aws_eip.ose-eip.id}"
-# }
-
-
-#----------------------------------------------
-# S3
-#----------------------------------------------
-# resource "aws_s3_bucket" "openshift_storage" {
-#     bucket = "openshift_storage"
-#     acl = "private" # Owner gets FULL_CONTROL. No one else has access rights (default).
-
-#     tags {
-#         Name = "openshift_storage"        
-#     }
-# }
-
-#--------------
-# Bucket Policy
-#--------------
-
-# {
-#     "Version": "2012-10-17",
-#     "Statement": [
-#         {
-#             "Effect": "Allow",
-#             "Action": "s3:ListAllMyBuckets",
-#             "Resource": "arn:aws:s3:::*"
-#         },
-#         {
-#             "Effect": "Allow",
-#             "Action": [
-#                 "s3:ListBucket",
-#                 "s3:GetBucketLocation"
-#             ],
-#             "Resource": "arn:aws:s3:::<INSERT YOUR BUCKET HERE>"
-#         },
-#         {
-#             "Effect": "Allow",
-#             "Action": [
-#                 "s3:PutObject",
-#                 "s3:GetObject",
-#                 "s3:DeleteObject"
-#             ],
-#             "Resource": "arn:aws:s3:::<INSERT YOUR BUCKET HERE>/*"
-#         }
-#     ]
-# }
-
-
 
 
 

@@ -2,7 +2,7 @@
 ---
 
 - name: Configure Ansible Tower 
-  hosts: tag_Name_tower_demo_server
+  hosts: tag_Name_ansible_tower
   tasks: []
   roles:
     - { role: ansible.tower }

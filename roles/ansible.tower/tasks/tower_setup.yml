@@ -1,0 +1,62 @@
+---
+
+#--------------------------------------------------
+# Install tower-cli
+#--------------------------------------------------
+
+- name: Install pip
+  become: yes
+  become_user: root
+  yum: name=python-pip  state=present
+
+
+- name: Install tower-cli
+  become: yes
+  become_user: root
+  pip: name=ansible-tower-cli state=present
+
+#--------------------------------------------------
+# Add License
+#--------------------------------------------------
+
+- name: Add Ansible Tower License
+  become: yes
+  become_user: root
+  copy: src=license dest=/etc/tower/license
+
+#--------------------------------------------------
+# Configure Tower Admin Account
+#--------------------------------------------------
+
+- name: Change Password for Admin
+  become: yes
+  become_user: root
+  template: src=.tower_cli.cfg.j2 dest=/home/centos/.tower_cli.cfg mode=0600 owner=root
+
+- name: Install pexpect for expext module
+  become: yes
+  become_user: root
+  pip: name=pexpect state=present
+
+- name: Use Expect to change via tower-manage
+  become: yes
+  become_user: root
+  expect:
+    command: tower-manage changepassword admin
+    responses:
+      (?i)password: "{{ tower_admin_passwd }}"
+
+#--------------------------------------------------
+# Slack
+#--------------------------------------------------
+
+# - name: Create Slack Notifiction template
+#   command: tower-cli notification_template create --name {{notification_name}} --description {{notification_desc}} --notification-type slack --channels {{slack_channels}} --token {{slack_token}}
+#   tags:
+#     - setup
+
+
+# - name: Disable ssl for tower-cli for the demo
+#   become: yes
+#   become_user: root
+#   command: tower-cli config verify_ssl false

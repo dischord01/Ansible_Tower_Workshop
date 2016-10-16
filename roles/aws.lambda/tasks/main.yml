@@ -5,5 +5,5 @@
   tags: aws_lambda_create
   
 
-- include: aws_lambda_delete.yml
-  tags: aws_lambda_delete 
+# - include: aws_lambda_delete.yml
+#   tags: aws_lambda_delete 

@@ -54,8 +54,6 @@
     handler: 'index.handler'
     role_arn: "{{ OHT_Arn.stdout | replace('\"', '') }}"
   with_items:
-    # - { name: OfficeHoursTerminator, zip_file: "{{ lookup('file', 'OfficeHoursTerminator.zip') }}" }
-    # - { name: OfficeHoursTerminator, zip_file: "{{ lookup('template', 'OfficeHoursTerminator.zip') }}" }
     - { name: OfficeHoursTerminator, zip_file: "/Users/dischord01/Code/Ansible_Tower/roles/aws.lambda/templates/OfficeHoursTerminator.zip" }
 
 

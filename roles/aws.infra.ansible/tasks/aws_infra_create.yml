@@ -87,11 +87,3 @@
     state: started
   tags:
     - vpc_create
-    
-# - name: Add Tower ami to in-memory inventory to pass to next Playbook
-#   add_host: 
-#     groups: tower 
-#     name: "{{ tower_instance.tagged_instances.0.public_ip }}"
-
-# - set_fact:
-#     tower_public_ip: "{{ tower_instance.tagged_instances.0.public_ip }}"

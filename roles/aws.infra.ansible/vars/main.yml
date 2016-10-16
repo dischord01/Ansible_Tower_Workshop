@@ -54,7 +54,7 @@ tower_keypair: tower
 tower_instance_type: t2.small #m4.large 
 tower_ami: ami-a86614bf  #ami-2051294a
 tower_public_ip: yes
-tower_instance_tag: "tower-demo-server"
+tower_instance_tag: "ansible-tower"
 
 # LAUNCH TOWER IN AMAZON EC2 (Public Tower Image)
 # ------------------------------------------------
