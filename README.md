@@ -73,8 +73,10 @@ aws_access_key: ""
 aws_secret_key: ""
 ```
 
+```
 ansible-playbook -i inventory aws_infra_terraform.yml --tags "tf_create" 
 ```
+
 To destroy
 
 ```
