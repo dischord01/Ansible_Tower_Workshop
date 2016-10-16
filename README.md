@@ -85,17 +85,24 @@ ansible-playbook -i inventory aws_infra_terraform.yml --tags "tf_destroy"
 
 ## Configure Ansible Tower
 
+
+
+
+### ansible.tower
+
+The ansible.tower role configures the instance with the `tower-cli`. By default the `ansible.tower` role installs 15 student accounts and associates them with a default `Lab Team` & `Lab Organization`.
+
 To target the newly created EC2 instance use either the `ec2.py` or `terraform.py` module located in the `/inventory/` folder. The [ec2.py](http://docs.ansible.com/ansible/intro_dynamic_inventory.html) is a dynamic script that queries Amazon for your instances. The [terraform.py](https://github.com/CiscoCloud/terraform.py) script is a dynamic inventory script for parsing Terraform state files, to target your newly created instances by tags or id numbers. 
 
 The instances that get created have the same tag so using just the inventory folder will work as well. 
-
+ 
 ```
 ansible-playbook -i inventory aws_ec2_instance.yml
 ```
 
 ## Login to Ansible Tower
 
-browse to the public ip of the EC2 instance and enter the `admin` password located in `roles/ansible.tower/vars/main.yml`. By default the `ansible.tower` role installs 15 student accounts and associates them with a default `Lab Team` & `Lab Organization`. 
+browse to the public ip of the EC2 instance and enter the `admin` password located in `roles/ansible.tower/vars/main.yml`. 
 
 ![Login](https://s3.amazonaws.com/dischord01/img/ansible-tower.png)
 
