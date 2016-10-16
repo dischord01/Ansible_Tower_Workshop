@@ -8,20 +8,7 @@
 2. [AWS CloudFormation](https://aws.amazon.com/documentation/cloudformation/)
 3. [Terraform](https://www.terraform.io/docs/providers/aws/index.html)
 
-These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up you AWS environment on you local machine. One way is to use the `awscli`. 
-
-```
-easy_install pip
-pip install awscli
-aws configure
-   |------------------output--------------------|
-	AWS Access Key ID [****************WFQ]:
-	AWS Secret Access Key [****************TFHJw]:
-	Default region name [us-east-1]:
-	Default output format [None]:
-```
-
-Then your aws credentials should be picked up. If not the just export them by hand.
+These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up you AWS environment on you local machine. One way is to export them by hand.
 
 ```
 export AWS_ACCESS_KEY_ID='****************WFQ'
@@ -29,9 +16,11 @@ export AWS_SECRET_ACCESS_KEY='****************TFHJw'
 ```
 
 
-## AWS Infrastructure
+## AWS Infrastructure Roles
+Three options for provisioning AWS Infrastucture:
 
-### Ansible Cloud Modules
+
+### aws.infra.ansible 
 
 To create infrastructure and a Ansible Tower instance via Ansible
 
@@ -46,7 +35,7 @@ ansible-playbook -i inventory aws_infra_ansible.yml --tags "vpc_destroy"
 ```
 
 
-### AWS CloudFormation
+### aws.infra.cloudformation
 
 To create infrastructure and a Ansible Tower instance via CloudFormation
 
@@ -59,40 +48,47 @@ To destroy
 ansible-playbook -i inventory aws_infra_cloudformation.yml --tags "cf_destroy" 
 ```
 
-### Terraform
+### aws.infra.terraform
 
-To create infrastructure and a Ansible Tower instance via Terraform 
+To create infrastructure and a Ansible Tower instance via Terraform
 
 ```
 brew install terraform
+```
 
-ansible-playbook -i inventory/terraform.py aws_infra_terraform.yml --tags "tf_create" 
+Then edit `roles/aws.terraform/vars/main.yml` and fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53. 
+
+
+```
+#####################################################
+# Domain Name you own
+#####################################################
+domain_name: ""
+zone_id: ""
+
+#####################################################
+# AWS API Keys for terraform.tfvars file
+#####################################################
+aws_access_key: ""
+aws_secret_key: ""
+```
+
+ansible-playbook -i inventory aws_infra_terraform.yml --tags "tf_create" 
 ```
 To destroy
 
 ```
-ansible-playbook -i inventory/terraform.py aws_infra_terraform.yml --tags "tf_destroy" 
+ansible-playbook -i inventory aws_infra_terraform.yml --tags "tf_destroy" 
 ```
 
 ## Configure Ansible Tower
 
 To target the newly created EC2 instance use either the `ec2.py` or `terraform.py` module located in the `/inventory/` folder. The [ec2.py](http://docs.ansible.com/ansible/intro_dynamic_inventory.html) is a dynamic script that queries Amazon for your instances. The [terraform.py](https://github.com/CiscoCloud/terraform.py) script is a dynamic inventory script for parsing Terraform state files, to target your newly created instances by tags or id numbers. 
 
-
-### 
-
-
-### Use `ec2.py` to query AWS for your instance by AWS Tags
+The instances that get created have the same tag so using just the inventory folder will work as well. 
 
 ```
-ansible-playbook -i inventory/ec2.py aws_ec2_instance.yml
-```
-Or
-
-### Use `terraform.py` to target you instance by AWS Tags
-
-```
-ansible-playbook -i inventory/terraform.py aws_ec2_instance.yml
+ansible-playbook -i inventory aws_ec2_instance.yml
 ```
 
 ## Login to Ansible Tower
