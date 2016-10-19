@@ -162,7 +162,7 @@ resource "aws_instance" "node" {
         key_file = "tower"
     }
     tags {
-        Name    = "${concat("node", count.index)}"
+        Name    = "${count.index}"
         sshUser = "ec2-user"
         role    = "nodes"
     }
