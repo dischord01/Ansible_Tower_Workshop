@@ -3,6 +3,11 @@
 #---------------------------------------------------
 #  SSH Key
 #---------------------------------------------------
+- name: Check for existing key and remove
+  ec2_key: name="tower" region="{{ region }}" state=absent
+  tags:
+    - tf_create
+
 - name: Create EC2 keypair
   ec2_key: name="tower" region="{{ region }}"
   register: ec2_key
